@@ -24,10 +24,9 @@ const DAYS_PER_MONTH = 31;
 const MAX_SCROLL_WAIT = 3000;
 const MAX_PAGE_WAIT = 10000;
 
-async function crawlTweets(Page, username, y, m, d) {
-  const url =
-`https://twitter.com/search?q="jornalismo de dados" OR "jornalismo guiado por dados" OR "jornalismo em bases de dados" OR "jornalista do futuro" OR "repórter do futuro" OR ("futuro" AND "jornalismo" AND "dados") OR ("jornalista do futuro" AND "dados") OR ("habilidades" AND "jornalista" AND "futuro")\
-  until:${y}-${m}-${d + 1} since:${y}-${m}-${d}`;
+async function crawlTweets(Page, username, y, m, d, query) {
+  const url = `https://twitter.com/search?q=${query}\
+    until:${y}-${m}-${d + 1} since:${y}-${m}-${d}`;
   console.log(url);
   console.log(`Crawling @${username}'s tweets on  ...`);
   await Page.navigate({url});
@@ -36,7 +35,7 @@ async function crawlTweets(Page, username, y, m, d) {
 }
 
 exports.main = async function(username, start_year, start_month, start_day,
-    end_year, end_month, end_day) {
+    end_year, end_month, end_day, query) {
   const tweets = [];
   const chrome = await chromeLauncher.launch({
     chromeFlags: ["--disable-gpu", "--no-sandbox", "--headless"]
@@ -98,7 +97,7 @@ exports.main = async function(username, start_year, start_month, start_day,
   while (year < end_year) {
     while (month < MONTHS_PER_YEAR) {
       while (day < DAYS_PER_MONTH - 1) {
-        await crawlTweets(Page, username, year, month, day);
+        await crawlTweets(Page, username, year, month, day, query);
         ++day;
       }
       day = 1;
@@ -109,14 +108,14 @@ exports.main = async function(username, start_year, start_month, start_day,
   }
   while (month < end_month) {
     while (day < DAYS_PER_MONTH - 1) {
-      await crawlTweets(Page, username, year, month, day);
+      await crawlTweets(Page, username, year, month, day, query);
       ++day;
     }
     day = 1;
     ++month;
   }
   while (day < end_day) {
-    await crawlTweets(Page, username, year, month, day);
+    await crawlTweets(Page, username, year, month, day, query);
     ++day;
   }
 
